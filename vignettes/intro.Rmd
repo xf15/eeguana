@@ -67,6 +67,7 @@ We first need to read the data:
 
 ```{r}
 faces <- read_vhdr("s1_faces.vhdr")
+# saveRDS(faces, 'example_eeg_lst.rds')
 ```
 
 The function `read_vhdr()` creates a list with data frames for the signal, events,
@@ -83,6 +84,11 @@ We see that there is no electrode positions in the object, but since we know tha
 channels_tbl(faces)
 ## In case the order of the electrodes is different, we do a left_join instead of replacing the table:
 channels_tbl(faces) <- select(channels_tbl(faces), .channel) %>%
+  left_join(layout_32_1020)
+
+b = channels_tbl(faces)
+
+a =  select(channels_tbl(faces), .channel) %>%
   left_join(layout_32_1020)
 ```
 
@@ -335,6 +341,7 @@ a = faces_seg %>%
 
 # b %>% plot_topo()
 # Error in UseMethod("plot_topo") : no applicable method for 'plot_topo' applied to an object of class "c('data.table', 'data.frame')"
+a %>% plot_topo()
 
 ```
 
