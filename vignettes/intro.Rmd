@@ -114,7 +114,7 @@ faces_filt <- eeg_filt_band_pass(faces, -HEOG, -VEOG, .freq = c(.1, 30))
 
 ## ICA
 
-We want to apply ICA to as much data as possible, but to "representative" data: to data of the experiment and not when the participants were moving or reading the instructions. For the same reason, we want to the ignore artifacts that we are sure are not representing brain activity, because of the extreme amplitudes in the signal.
+We want to apply ICA to as much data as possible, but to "representative" data: to data of the experiment and not when the participants were moving or reading the instructions. For the same reason, we want to ignore artifacts that we are sure are not representing brain activity, because of the extreme amplitudes in the signal.
 
 We first cut a large segment that excludes data before and after the experiment was ran using `eeg_segment()` (that is, only data from the marker "s111" to "s121"), and then we mark differences of 200 microvolts between peaks with `eeg_artif_minmax()`.
 
@@ -182,6 +182,9 @@ faces_icaed <- faces_ica %>%
 Now we'll segment the data to appropriate check if there are still artifacts.
 
 ```{r, fig.dim = c(10,15), out.width = "100%"}
+# skipped ica 
+faces_icaed = faces_ls
+
 events_tbl(faces_icaed) <- events_tbl(faces_icaed) %>%
   filter(!.type %in% "artifact")
 
@@ -290,6 +293,51 @@ ERP_plot %>% plot_in_layout()
 ```
 
 Another possibility is to create a topographic plot of the two conditions, by first making segments that include only the interval .1-.2 *s* after the onset of the stimuli, creating a table with interpolated amplitudes and using the ggplot wrapper `plot_topo()`.
+
+so a list of 3 tibbles, all have id column, prob trial 
+dplyr functions applied to first tibble but use info from other tibbles
+
+to use plot_topo, need to 
+> a
+# EEG data:
+# Grouped by: condition, 
+
+# Signal table:
+   .id .sample       Fp1       Fpz        Fp2        F7         F3         Fz          F4        F8
+1:   1      NA  1.302739  0.619569  0.8738523  1.510401  0.7511473  0.5318817  0.02592997  1.259326
+2:   2      NA -5.160446 -4.042577 -4.4840881 -1.640160 -3.4948657 -4.4670666 -4.50263809 -1.482136
+          FC5        FC1       FC2        FC6         M1        T7         C3         Cz         C4
+1:  0.6475113 -0.1766846 -0.290890  0.7233077 -1.3262322 -1.173658 -0.3810696 -0.4503045 -0.4709493
+2: -2.5690261 -3.9727685 -4.237789 -2.1669302 -0.9094657 -2.137187 -4.4412866 -4.5043811 -3.9172827
+           T8        M2       CP5        CP1        CP2       CP6        P7        P3         Pz
+1:  1.1969460 1.3262322 -2.341152 -0.4514133 -0.1314872  0.531863 -5.795798 -1.871672  0.3852299
+2: -0.4792523 0.9094657 -4.463464 -4.6327015 -4.7537928 -1.549558 -3.684362 -4.434650 -3.8191133
+           P4         P8        POz        O1        Oz         O2      HEOG      VEOG
+1:  0.6420794 -0.1501023 -0.9061498 -3.856866 -2.574428 -0.3377181 -4012.673 -8917.204
+2: -2.8062593  0.3395927 -3.8393424 -3.266121 -4.400747 -1.5908510 -3983.161 -8904.101
+
+# Events table:
+No events.
+
+# Segments table:
+# A tibble: 2 × 3
+    .id .recording    condition
+  <int> <chr>         <chr>    
+1     1 s1_faces.vhdr faces    
+2     2 s1_faces.vhdr non-faces
+```{r}
+a = faces_seg %>%
+  filter(between(as_time(.sample, .unit = "s"), .1, .2)) %>%
+  group_by(condition) %>%
+  summarize_at(channel_names(.), mean, na.rm = TRUE) 
+
+# b = cbind(a$.signal, a$.segments)
+
+# b %>% plot_topo()
+# Error in UseMethod("plot_topo") : no applicable method for 'plot_topo' applied to an object of class "c('data.table', 'data.frame')"
+
+```
+
 
 ```{r topo, fig.dim = c(10,5), out.width = "100%"}
 faces_seg %>%
