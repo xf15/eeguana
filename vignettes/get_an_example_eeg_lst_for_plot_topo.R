@@ -7,7 +7,8 @@ set.seed(123) # ICA will always find the same components
 faces <- read_vhdr("s1_faces.vhdr")
 
 channels_tbl(faces) <- select(channels_tbl(faces), .channel) %>%
-  left_join(layout_32_1020)
+  # left_join(layout_32_1020)
+  left_join(layout_biosemi_32_1020)
 
 faces <- eeg_rereference(faces, -VEOG, -HEOG, .ref = c("M1", "M2"))
 
