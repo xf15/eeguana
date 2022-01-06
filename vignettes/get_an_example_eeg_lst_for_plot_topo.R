@@ -6,9 +6,17 @@ set.seed(123) # ICA will always find the same components
 
 faces <- read_vhdr("s1_faces.vhdr")
 
+
+# if biosemi
+faces$.signal = faces$.signal %>% 
+  mutate(AF3 = faces$.signal$Fp1,
+         AF4 = faces$.signal$Fp1,
+         PO3 = faces$.signal$Fp1,
+         PO4 = faces$.signal$Fp1)
+
 channels_tbl(faces) <- select(channels_tbl(faces), .channel) %>%
-  left_join(layout_32_1020)
-  # left_join(layout_biosemi_32_1020)
+  # left_join(layout_32_1020)
+  left_join(layout_biosemi_32_1020)
 
 faces <- eeg_rereference(faces, -VEOG, -HEOG, .ref = c("M1", "M2"))
 
@@ -55,8 +63,8 @@ a = faces_seg %>%
   group_by(condition) %>%
   summarize_at(channel_names(.), mean, na.rm = TRUE) 
 
-# saveRDS(a, 'example_eeg_lst_biosemi32.rds')
-saveRDS(a, 'example_eeg_lst_brainvision32.rds')
+saveRDS(a, 'example_eeg_lst_biosemi32.rds')
+# saveRDS(a, 'example_eeg_lst_brainvision32.rds')
 
 
 a %>% plot_topo() +
